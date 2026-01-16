@@ -1,0 +1,114 @@
+type EarningsWithdrawn @entity(immutable: true) {
+  id: Bytes!
+  creator: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnershipTransferStarted @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Paused @entity(immutable: true) {
+  id: Bytes!
+  admin: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type PlatformFeeUpdated @entity(immutable: true) {
+  id: Bytes!
+  oldFee: BigInt! # uint256
+  newFee: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RateChangeAccepted @entity(immutable: true) {
+  id: Bytes!
+  streamId: BigInt! # uint256
+  oldRate: BigInt! # uint256
+  newRate: BigInt! # uint256
+  settledAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RateChangeCancelled @entity(immutable: true) {
+  id: Bytes!
+  streamId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RateChangeProposed @entity(immutable: true) {
+  id: Bytes!
+  streamId: BigInt! # uint256
+  oldRate: BigInt! # uint256
+  newRate: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type StreamCreated @entity(immutable: true) {
+  id: Bytes!
+  streamId: BigInt! # uint256
+  payer: Bytes! # address
+  receiver: Bytes! # address
+  ratePerSecond: BigInt! # uint256
+  maxDeposit: BigInt! # uint256
+  startTime: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type StreamExtended @entity(immutable: true) {
+  id: Bytes!
+  streamId: BigInt! # uint256
+  additionalDeposit: BigInt! # uint256
+  newTotalDeposit: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type StreamStopped @entity(immutable: true) {
+  id: Bytes!
+  streamId: BigInt! # uint256
+  totalPaid: BigInt! # uint256
+  refunded: BigInt! # uint256
+  duration: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Unpaused @entity(immutable: true) {
+  id: Bytes!
+  admin: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

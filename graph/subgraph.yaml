@@ -1,0 +1,59 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: StreamPayment
+    network: polygon-amoy
+    source:
+      address: "0xF739B72738a8D99B6955473E2817d558Ea1fFe10"
+      abi: StreamPayment
+      startBlock: 32380515
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - EarningsWithdrawn
+        - OwnershipTransferStarted
+        - OwnershipTransferred
+        - Paused
+        - PlatformFeeUpdated
+        - RateChangeAccepted
+        - RateChangeCancelled
+        - RateChangeProposed
+        - StreamCreated
+        - StreamExtended
+        - StreamStopped
+        - Unpaused
+      abis:
+        - name: StreamPayment
+          file: ./abis/StreamPayment.json
+      eventHandlers:
+        - event: EarningsWithdrawn(indexed address,uint256)
+          handler: handleEarningsWithdrawn
+        - event: OwnershipTransferStarted(indexed address,indexed address)
+          handler: handleOwnershipTransferStarted
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Paused(indexed address)
+          handler: handlePaused
+        - event: PlatformFeeUpdated(uint256,uint256)
+          handler: handlePlatformFeeUpdated
+        - event: RateChangeAccepted(indexed uint256,uint256,uint256,uint256)
+          handler: handleRateChangeAccepted
+        - event: RateChangeCancelled(indexed uint256)
+          handler: handleRateChangeCancelled
+        - event: RateChangeProposed(indexed uint256,uint256,uint256)
+          handler: handleRateChangeProposed
+        - event: StreamCreated(indexed uint256,indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleStreamCreated
+        - event: StreamExtended(indexed uint256,uint256,uint256)
+          handler: handleStreamExtended
+        - event: StreamStopped(indexed uint256,uint256,uint256,uint256)
+          handler: handleStreamStopped
+        - event: Unpaused(indexed address)
+          handler: handleUnpaused
+      file: ./src/stream-payment.ts
