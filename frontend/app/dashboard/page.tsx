@@ -1,74 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { WalletConnect } from "@/components/WalletConnect";
 import { DashboardStats } from "@/components/DashboardStats";
 import { ActiveStreams } from "@/components/ActiveStreams";
 import { StreamHistory } from "@/components/StreamHistory";
+import {
+  useCreatorDashboard,
+  useStreamHistory,
+} from "@/hooks/useCreatorDashboard";
+import { usePendingEarnings } from "@/hooks/useStreamPaymentContract";
 import Link from "next/link";
-import { LayoutDashboard, TrendingUp, DollarSign, Users } from "lucide-react";
+import { LayoutDashboard, Loader2 } from "lucide-react";
+import { formatUnits } from "viem";
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount();
 
-  // Mock data - in production, fetch from contract events/backend
-  const [stats, setStats] = useState({
-    totalEarned: "0.00",
-    activeStreams: 0,
-    totalViewers: 0,
-    avgPerStream: "0.00",
-  });
+  const { data: creatorData, isLoading: isLoadingCreator } =
+    useCreatorDashboard(address);
+  const { data: historyData, isLoading: isLoadingHistory } = useStreamHistory(
+    address,
+    { first: 20 }
+  );
 
-  const [activeStreams, setActiveStreams] = useState<any[]>([]);
-  const [history, setHistory] = useState<any[]>([]);
+  const { data: pendingEarnings } = usePendingEarnings(
+    address as `0x${string}`
+  );
 
-  useEffect(() => {
-    if (isConnected && address) {
-      // TODO: Fetch real data from contract
-      // Mock data for demonstration
-      setStats({
-        totalEarned: "124.56",
-        activeStreams: 3,
-        totalViewers: 47,
-        avgPerStream: "2.65",
-      });
+  const stats = {
+    totalEarned: creatorData?.totalEarned
+      ? formatUnits(BigInt(creatorData.totalEarned), 6)
+      : "0.00",
+    activeStreams: creatorData?.activeStreamCount || 0,
+    totalViewers: creatorData?.totalViewersCount || 0,
+    avgPerStream:
+      creatorData?.totalStreamCount && creatorData.totalStreamCount > 0
+        ? (
+            parseFloat(formatUnits(BigInt(creatorData.totalEarned), 6)) /
+            creatorData.totalStreamCount
+          ).toFixed(2)
+        : "0.00",
+  };
 
-      setActiveStreams([
-        {
-          id: 1,
-          viewer: "0x1234...5678",
-          startTime: Date.now() - 300000,
-          earned: "0.15",
-          rate: "0.02",
-        },
-        {
-          id: 2,
-          viewer: "0xabcd...efgh",
-          startTime: Date.now() - 180000,
-          earned: "0.09",
-          rate: "0.02",
-        },
-      ]);
+  const activeStreams =
+    creatorData?.streams.map((stream) => ({
+      id: stream.streamId,
+      viewer: stream.payer,
+      startTime: parseInt(stream.startTime) * 1000, // Convert to milliseconds
+      deposit: formatUnits(BigInt(stream.deposit), 6),
+      rate: formatUnits(BigInt(stream.ratePerMinute), 6),
+    })) || [];
 
-      setHistory([
-        {
-          id: 3,
-          viewer: "0x9876...4321",
-          duration: 600,
-          earned: "0.20",
-          endTime: Date.now() - 3600000,
-        },
-        {
-          id: 4,
-          viewer: "0xfedc...ba98",
-          duration: 1200,
-          earned: "0.40",
-          endTime: Date.now() - 7200000,
-        },
-      ]);
-    }
-  }, [isConnected, address]);
+  const history =
+    historyData?.map((stream) => ({
+      id: stream.streamId,
+      viewer: stream.payer,
+      duration: stream.duration ? parseInt(stream.duration) : 0,
+      earned: stream.totalPaid
+        ? formatUnits(BigInt(stream.totalPaid), 6)
+        : "0.00",
+      endTime: stream.stoppedAtTimestamp
+        ? parseInt(stream.stoppedAtTimestamp) * 1000
+        : Date.now(),
+    })) || [];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -112,11 +107,25 @@ export default function DashboardPage() {
               <WalletConnect />
             </div>
           </div>
+        ) : isLoadingCreator || isLoadingHistory ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 mx-auto mb-4 text-mint-400 animate-spin" />
+              <p className="text-zinc-400">Loading your dashboard...</p>
+            </div>
+          </div>
         ) : (
           <div className="space-y-8">
             <div>
               <h1 className="text-3xl font-bold mb-6">Welcome back!</h1>
-              <DashboardStats stats={stats} />
+              <DashboardStats
+                stats={stats}
+                pendingEarnings={
+                  pendingEarnings
+                    ? formatUnits(BigInt(pendingEarnings.toString()), 6)
+                    : undefined
+                }
+              />
             </div>
 
             <div>
