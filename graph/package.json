@@ -2,17 +2,23 @@
   "name": "streampay",
   "license": "UNLICENSED",
   "scripts": {
+    "prepare:amoy": "node scripts/prepare-network.js polygon-amoy",
+    "prepare:base": "node scripts/prepare-network.js base-sepolia",
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ streampay",
+    "deploy:amoy": "npm run prepare:amoy && npm run codegen && npm run build && graph deploy --node https://api.studio.thegraph.com/deploy/ streampay",
+    "deploy:base": "npm run prepare:base && npm run codegen && npm run build && graph deploy --node https://api.studio.thegraph.com/deploy/ streampay",
     "create-local": "graph create --node http://localhost:8020/ streampay",
     "remove-local": "graph remove --node http://localhost:8020/ streampay",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 streampay",
     "test": "graph test"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.98.1",
-    "@graphprotocol/graph-ts": "0.37.0"
+    "@graphprotocol/graph-cli": "^0.98.1",
+    "@graphprotocol/graph-ts": "^0.37.0"
   },
-  "devDependencies": { "matchstick-as": "0.6.0" }
+  "devDependencies": {
+    "matchstick-as": "0.6.0",
+    "undici": "^7.18.2"
+  }
 }

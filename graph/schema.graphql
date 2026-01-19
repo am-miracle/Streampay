@@ -1,6 +1,38 @@
+type Creator @entity(immutable: false) {
+  id: Bytes! # creator address
+  totalEarned: BigInt! # all-time earnings
+  activeStreamCount: Int! # current active streams
+  totalStreamCount: Int! # all streams ever created
+  uniqueViewers: [Bytes!]! # array of unique payer addresses
+  totalViewersCount: Int! # count of unique payers
+  streams: [Stream!]! @derivedFrom(field: "receiver") # all streams
+  withdrawals: [EarningsWithdrawn!]! @derivedFrom(field: "creator") # withdrawal history
+}
+
+type Stream @entity(immutable: false) {
+  id: ID! # streamId as string
+  streamId: BigInt! # uint256
+  payer: Bytes! # viewer address
+  receiver: Creator! # creator (reference to Creator entity)
+  ratePerSecond: BigInt! # current rate (may change via rate change)
+  deposit: BigInt! # current total deposit (includes extensions)
+  startTime: BigInt! # stream start timestamp
+  endTime: BigInt # stream end timestamp (null if active)
+  duration: BigInt # total duration in seconds (null if active)
+  totalPaid: BigInt # total amount paid when stopped (null if active)
+  refunded: BigInt # refund amount when stopped (null if active)
+  isActive: Boolean! # true if stream is currently running
+  ratePerMinute: BigInt! # derived: ratePerSecond * 60
+  createdAtBlock: BigInt! # block number when created
+  createdAtTimestamp: BigInt! # timestamp when created
+  stoppedAtBlock: BigInt # block number when stopped
+  stoppedAtTimestamp: BigInt # timestamp when stopped
+}
+
 type EarningsWithdrawn @entity(immutable: true) {
   id: Bytes!
-  creator: Bytes! # address
+  creator: Creator! # reference to Creator entity
+  creatorAddress: Bytes! # address
   amount: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
@@ -73,6 +105,7 @@ type RateChangeProposed @entity(immutable: true) {
 
 type StreamCreated @entity(immutable: true) {
   id: Bytes!
+  stream: Stream! # reference to Stream entity
   streamId: BigInt! # uint256
   payer: Bytes! # address
   receiver: Bytes! # address
@@ -86,6 +119,7 @@ type StreamCreated @entity(immutable: true) {
 
 type StreamExtended @entity(immutable: true) {
   id: Bytes!
+  stream: Stream! # reference to Stream entity
   streamId: BigInt! # uint256
   additionalDeposit: BigInt! # uint256
   newTotalDeposit: BigInt! # uint256
@@ -96,6 +130,7 @@ type StreamExtended @entity(immutable: true) {
 
 type StreamStopped @entity(immutable: true) {
   id: Bytes!
+  stream: Stream! # reference to Stream entity
   streamId: BigInt! # uint256
   totalPaid: BigInt! # uint256
   refunded: BigInt! # uint256

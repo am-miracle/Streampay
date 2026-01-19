@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: StreamPayment
-    network: base-sepolia
+    network: {{network}}
     source:
-      address: "0xB1686a2c0eE7ebCf9Aea3883BCb652D39F881727"
+      address: "{{address}}"
       abi: StreamPayment
-      startBlock: 0
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
