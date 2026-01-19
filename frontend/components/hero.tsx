@@ -41,15 +41,15 @@ export function Hero() {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-          <div
+          {/*<div
             className="mb-6 animate-fade-in-up"
             style={{ animationDelay: "0.1s" }}
           >
             <Badge variant="outline">
               <span className="w-2 h-2 rounded-full bg-white mr-2 animate-pulse"></span>
-              Live on Polygon Testnet
+              Live on Base Testnet
             </Badge>
-          </div>
+          </div>*/}
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-8 animate-fade-in-up leading-[1.1]">
             Micropayments. <br />
@@ -70,13 +70,17 @@ export function Hero() {
             className="flex flex-col sm:flex-row items-center gap-4 mb-16 animate-fade-in-up"
             style={{ animationDelay: "0.3s" }}
           >
-            <Button variant="primary" className="w-full sm:w-auto group">
-              Try Live Demo{" "}
-              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="outline" className="w-full sm:w-auto">
-              Start Building
-            </Button>
+            <a href="/demo" className="w-full sm:w-auto">
+              <Button variant="primary" className="w-full group">
+                Try Live Demo{" "}
+                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </a>
+            <a href="/demo" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full">
+                View Demo
+              </Button>
+            </a>
           </div>
           <div
             className="w-full max-w-md animate-fade-in-up"
@@ -84,7 +88,9 @@ export function Hero() {
           >
             <div className="relative rounded-2xl bg-zinc-900 border border-zinc-800 p-1 shadow-2xl overflow-hidden">
               <div
-                className={`absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent skew-x-12 transition-transform duration-1000 ${streamActive ? "translate-x-full" : "-translate-x-full"}`}
+                className={`absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent skew-x-12 transition-transform duration-1000 ${
+                  streamActive ? "translate-x-full" : "-translate-x-full"
+                }`}
               ></div>
 
               <div className="bg-zinc-950 rounded-xl p-6 flex flex-col gap-6 relative z-10">
@@ -98,7 +104,9 @@ export function Hero() {
                         Status
                       </div>
                       <div
-                        className={`text-sm font-medium ${streamActive ? "text-mint-400" : "text-zinc-300"}`}
+                        className={`text-sm font-medium ${
+                          streamActive ? "text-mint-400" : "text-zinc-300"
+                        }`}
                       >
                         {streamActive ? "Streaming USDC..." : "Idle"}
                       </div>

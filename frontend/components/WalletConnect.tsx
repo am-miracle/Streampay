@@ -39,7 +39,7 @@ export function WalletConnect() {
                   <button
                     onClick={openConnectModal}
                     type="button"
-                    className="px-6 py-3 bg-mint-500 text-zinc-950 font-semibold rounded-lg hover:bg-mint-400 transition-all duration-200 shadow-lg hover:shadow-mint-500/20"
+                    className="px-6 py-3 bg-mint-500 text-zinc-950 font-semibold rounded-full hover:bg-mint-400 transition-all duration-200 shadow-lg hover:shadow-mint-500/20"
                   >
                     Connect Wallet
                   </button>
@@ -51,7 +51,7 @@ export function WalletConnect() {
                   <button
                     onClick={openChainModal}
                     type="button"
-                    className="px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-all duration-200"
+                    className="px-6 py-3 bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition-all duration-200"
                   >
                     Wrong network
                   </button>
@@ -63,7 +63,7 @@ export function WalletConnect() {
                   <button
                     onClick={openChainModal}
                     type="button"
-                    className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 transition-all duration-200 flex items-center gap-2"
+                    className="px-4 py-2 bg-zinc-800 text-white rounded-full hover:bg-zinc-700 transition-all duration-200 flex items-center gap-2"
                   >
                     {chain.hasIcon && (
                       <div
@@ -91,7 +91,7 @@ export function WalletConnect() {
                   <button
                     onClick={openAccountModal}
                     type="button"
-                    className="px-4 py-2 bg-mint-500 text-zinc-950 font-semibold rounded-lg hover:bg-mint-400 transition-all duration-200"
+                    className="px-4 py-2 bg-mint-500 text-zinc-950 font-semibold rounded-full hover:bg-mint-400 transition-all duration-200"
                   >
                     {account.displayName}
                   </button>
