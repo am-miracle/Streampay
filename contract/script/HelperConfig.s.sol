@@ -30,17 +30,17 @@ contract HelperConfig is Script {
         }
     }
 
-    // USDC Address: Circle's USDC on Amoy
+    // USDC address: circle's USDC on Amoy
     function getPolygonAmoyConfig() public view returns (NetworkConfig memory) {
         return
             NetworkConfig({
-                usdcAddress: 0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582, // USDC on Amoy
+                usdcAddress: 0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582,
                 platformFee: 10, // 0.1% (10 basis points)
                 deployerKey: vm.envUint("PRIVATE_KEY")
             });
     }
 
-    // USDC Address: Circle's native USDC on Polygon PoS
+    // USDC address: circle's native USDC on polygon PoS
     function getPolygonMainnetConfig()
         public
         view
@@ -48,27 +48,27 @@ contract HelperConfig is Script {
     {
         return
             NetworkConfig({
-                usdcAddress: 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359, // Native USDC on Polygon
+                usdcAddress: 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359,
                 platformFee: 10, // 0.1%
                 deployerKey: vm.envUint("PRIVATE_KEY")
             });
     }
 
-    // USDC Address: Circle's USDC on Base Sepolia
+    // USDC address: circle's USDC on base sepolia
     function getBaseSepoliaConfig() public view returns (NetworkConfig memory) {
         return
             NetworkConfig({
-                usdcAddress: 0x036CbD53842c5426634e7929541eC2318f3dCF7e, // USDC on Base Sepolia
+                usdcAddress: 0x036CbD53842c5426634e7929541eC2318f3dCF7e,
                 platformFee: 10, // 0.1%
                 deployerKey: vm.envUint("PRIVATE_KEY")
             });
     }
 
-    // USDC Address: Circle's native USDC on Base
+    // USDC address: circle's native USDC on base
     function getBaseMainnetConfig() public view returns (NetworkConfig memory) {
         return
             NetworkConfig({
-                usdcAddress: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913, // Native USDC on Base
+                usdcAddress: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,
                 platformFee: 10, // 0.1%
                 deployerKey: vm.envUint("PRIVATE_KEY")
             });
@@ -115,7 +115,7 @@ contract HelperConfig is Script {
     }
 
     /**
-     * @notice Checks if running on a testnet
+     * checks if running on a testnet
      */
     function isTestnet() public view returns (bool) {
         return
@@ -125,7 +125,7 @@ contract HelperConfig is Script {
     }
 
     /**
-     * @notice Checks if running on mainnet
+     * checks if running on mainnet
      */
     function isMainnet() public view returns (bool) {
         return block.chainid == 137 || block.chainid == 8453;

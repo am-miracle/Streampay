@@ -1,0 +1,67 @@
+export interface Article {
+  id: string;
+  title: string;
+  description: string;
+  author: string;
+  authorAddress: string;
+  readTime: number;
+  ratePerMinute: number;
+  estimatedCost: number;
+  category: string;
+  thumbnail: string;
+}
+
+export const PREMIUM_ARTICLES: Article[] = [
+  {
+    id: "1",
+    title: "Understanding StreamPay's Gasless Micropayment Architecture",
+    description:
+      "A deep dive into how account abstraction and bundlers enable true micropayments without gas fees. Learn the technical architecture behind StreamPay.",
+    author: "StreamPay Team",
+    authorAddress: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    readTime: 8,
+    ratePerMinute: 0.02,
+    estimatedCost: 0.16,
+    category: "Technical",
+    thumbnail: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  },
+  {
+    id: "2",
+    title: "The Future of Content Monetization: Why Micropayments Win",
+    description:
+      "Traditional subscriptions are broken. Discover why pay-per-second models will dominate the creator economy and how blockchain makes it possible.",
+    author: "Creator Economy Labs",
+    authorAddress: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+    readTime: 6,
+    ratePerMinute: 0.015,
+    estimatedCost: 0.09,
+    category: "Business",
+    thumbnail: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+  },
+  {
+    id: "3",
+    title: "Building Gasless dApps: A Developer's Guide to ERC-4337",
+    description:
+      "Step-by-step tutorial on implementing account abstraction in your dApp. Code examples, best practices, and common pitfalls to avoid.",
+    author: "Web3 Builders",
+    authorAddress: "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
+    readTime: 12,
+    ratePerMinute: 0.025,
+    estimatedCost: 0.3,
+    category: "Tutorial",
+    thumbnail: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+  },
+  {
+    id: "4",
+    title: "Smart Contract Security in Payment Streaming Protocols",
+    description:
+      "Analyzing potential vulnerabilities in streaming payment systems. How StreamPay protects against reentrancy, front-running, and other attack vectors.",
+    author: "Security Research",
+    authorAddress: "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+    readTime: 10,
+    ratePerMinute: 0.03,
+    estimatedCost: 0.3,
+    category: "Security",
+    thumbnail: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+  },
+];
