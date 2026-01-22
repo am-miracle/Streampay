@@ -7,8 +7,8 @@
   },
   "base-sepolia": {
     "StreamPayment": {
-      "address": "0xB1686a2c0eE7ebCf9Aea3883BCb652D39F881727",
-      "startBlock": 0
+      "address": "0x72f63ad00cf0f218491e4824bc293267de894621",
+      "startBlock": 36670633
     }
   }
 }

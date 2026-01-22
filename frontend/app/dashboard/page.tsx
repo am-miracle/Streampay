@@ -13,41 +13,67 @@ import { usePendingEarnings } from "@/hooks/useStreamPaymentContract";
 import Link from "next/link";
 import { LayoutDashboard, Loader2 } from "lucide-react";
 import { formatUnits } from "viem";
-import { useState } from "react";
-import { stopStreamGasless, withdrawEarningsGasless } from "@/lib/biconomy";
-import { toast } from "sonner";
-import { useReadContract } from "wagmi";
+import { useState, useEffect } from "react";
 import {
-  STREAM_PAYMENT_ADDRESSES,
-  STREAM_PAYMENT_ABI,
-} from "@/lib/contracts/config";
+  stopStreamGasless,
+  withdrawEarningsGasless,
+  initializeSmartAccount,
+  isInitialized,
+} from "@/lib/biconomy";
+import { toast } from "sonner";
+import { useWalletClient } from "wagmi";
 
 export default function DashboardPage() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { data: walletClient } = useWalletClient();
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [isWithdrawSuccess, setIsWithdrawSuccess] = useState(false);
   const [stoppingStreamId, setStoppingStreamId] = useState<string | null>(null);
+  const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(
+    null
+  );
+  const [isInitializing, setIsInitializing] = useState(false);
 
-  const { data: contractOwner } = useReadContract({
-    address: STREAM_PAYMENT_ADDRESSES[84532],
-    abi: STREAM_PAYMENT_ABI,
-    functionName: "owner",
-  });
-
-  const creatorAddress = contractOwner as string | undefined;
+  useEffect(() => {
+    async function init() {
+      if (walletClient && !isInitialized() && !isInitializing) {
+        setIsInitializing(true);
+        try {
+          const { smartAccountAddress } = await initializeSmartAccount(
+            walletClient
+          );
+          setSmartAccountAddress(smartAccountAddress);
+          console.log("Smart account initialized:", smartAccountAddress);
+        } catch (error) {
+          console.error("Failed to initialize smart account:", error);
+          toast.error("Failed to initialize smart account");
+        } finally {
+          setIsInitializing(false);
+        }
+      }
+    }
+    init();
+  }, [walletClient, isInitializing]);
 
   const { data: creatorData, isLoading: isLoadingCreator } =
-    useCreatorDashboard(creatorAddress);
+    useCreatorDashboard(address);
   const { data: historyData, isLoading: isLoadingHistory } = useStreamHistory(
-    creatorAddress,
+    address,
     { first: 20 }
   );
 
   const { data: pendingEarnings } = usePendingEarnings(
-    creatorAddress as `0x${string}`
+    address as `0x${string}`
   );
 
   const handleWithdraw = async () => {
+    if (!isInitialized()) {
+      toast.error("Smart account not ready", {
+        description: "Please wait for initialization to complete",
+      });
+      return;
+    }
+
     setIsWithdrawing(true);
     setIsWithdrawSuccess(false);
     try {
@@ -68,6 +94,13 @@ export default function DashboardPage() {
   };
 
   const handleStopStream = async (streamId: string) => {
+    if (!isInitialized()) {
+      toast.info("Smart account not ready", {
+        description: "Please wait for initialization to complete",
+      });
+      return;
+    }
+
     setStoppingStreamId(streamId);
     try {
       const result = await stopStreamGasless(BigInt(streamId));

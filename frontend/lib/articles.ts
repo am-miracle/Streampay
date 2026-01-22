@@ -18,7 +18,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "A deep dive into how account abstraction and bundlers enable true micropayments without gas fees. Learn the technical architecture behind StreamPay.",
     author: "StreamPay Team",
-    authorAddress: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    authorAddress: "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4",
     readTime: 8,
     ratePerMinute: 0.02,
     estimatedCost: 0.16,
@@ -31,7 +31,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "Traditional subscriptions are broken. Discover why pay-per-second models will dominate the creator economy and how blockchain makes it possible.",
     author: "Creator Economy Labs",
-    authorAddress: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+    authorAddress: "0xB0a1020486fDd86795e4f2E06fBF11d6aD2C19BB",
     readTime: 6,
     ratePerMinute: 0.015,
     estimatedCost: 0.09,
@@ -44,7 +44,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "Step-by-step tutorial on implementing account abstraction in your dApp. Code examples, best practices, and common pitfalls to avoid.",
     author: "Web3 Builders",
-    authorAddress: "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
+    authorAddress: "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4",
     readTime: 12,
     ratePerMinute: 0.025,
     estimatedCost: 0.3,
@@ -57,7 +57,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "Analyzing potential vulnerabilities in streaming payment systems. How StreamPay protects against reentrancy, front-running, and other attack vectors.",
     author: "Security Research",
-    authorAddress: "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+    authorAddress: "0x1360eDa247bF2fEfeCc5FD5926aC1EF628b19733",
     readTime: 10,
     ratePerMinute: 0.03,
     estimatedCost: 0.3,

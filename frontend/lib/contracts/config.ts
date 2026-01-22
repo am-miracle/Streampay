@@ -5,7 +5,7 @@ export const STREAM_PAYMENT_ADDRESSES = {
   // amoy testnet
   80002: "0xF739B72738a8D99B6955473E2817d558Ea1fFe10",
   // base sepolia testnet
-  84532: "0xB1686a2c0eE7ebCf9Aea3883BCb652D39F881727",
+  84532: "0x72f63ad00cf0f218491e4824bc293267de894621",
   // 137: '',
   // 8453: '',
 } as const;

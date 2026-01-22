@@ -16,6 +16,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Article } from "@/lib/articles";
 import { ARTICLE_CONTENT } from "@/lib/article-content";
+import { toast } from "sonner";
 
 interface ArticleDetailClientProps {
   article: Article;
@@ -77,15 +78,45 @@ export default function ArticleDetailClient({
     }
   }, [stream, streamedAmount]);
 
+  useEffect(() => {
+    if (isStreaming && streamId) {
+      const articleContent = ARTICLE_CONTENT[article.id] || [];
+      if (articleContent.length === 0) return;
+
+      const allSectionsUnlocked = articleContent.every(
+        (section) => elapsedTime >= section.unlockAt
+      );
+
+      if (allSectionsUnlocked) {
+        (async () => {
+          try {
+            console.log("Auto-stopping stream: all content unlocked");
+            await stopStream(streamId);
+            setIsStreaming(false);
+          } catch (error) {
+            console.error("Failed to auto-stop stream:", error);
+          }
+        })();
+      }
+    }
+  }, [isStreaming, elapsedTime, article.id, streamId, stopStream]);
+
   const handleStartStream = async () => {
     if (!isReady) {
-      alert("Smart account is not ready. Please wait...");
+      toast.info("Smart account is not ready. Please wait...");
+      return;
+    }
+
+    if (isStreaming && streamId) {
+      toast.error(
+        "You have an active stream. Please stop the current stream before starting a new one."
+      );
       return;
     }
 
     // Check if user is on Base Sepolia
     if (chain?.id !== 84532) {
-      alert(
+      toast.error(
         `Please switch to Base Sepolia network. Current network: ${
           chain?.name || "Unknown"
         } (${chain?.id})`
@@ -106,7 +137,7 @@ export default function ArticleDetailClient({
       setElapsedTime(0);
     } catch (error) {
       console.error("Failed to start stream:", error);
-      alert(
+      toast.error(
         `Failed to start stream: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
@@ -118,11 +149,12 @@ export default function ArticleDetailClient({
     if (!streamId) return;
 
     try {
+      console.log("clicked");
       await stopStream(streamId);
       setIsStreaming(false);
     } catch (error) {
       console.error("Failed to stop stream:", error);
-      alert(
+      toast.error(
         `Failed to stop stream: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
@@ -135,10 +167,10 @@ export default function ArticleDetailClient({
 
     try {
       await extendStream(streamId, article.estimatedCost);
-      alert("Stream extended successfully!");
+      toast.success("Stream extended successfully!");
     } catch (error) {
       console.error("Failed to extend stream:", error);
-      alert(
+      toast.error(
         `Failed to extend stream: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
