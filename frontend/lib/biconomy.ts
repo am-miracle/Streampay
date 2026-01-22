@@ -199,7 +199,7 @@ export async function createStreamGasless(
   } catch (error: any) {
     if (error.name === "WaitForTransactionReceiptTimeoutError" && txHash) {
       console.warn(
-        "⚠️ Transaction timed out, but likely succeeded. Fetching latest stream ID..."
+        "Transaction timed out, but likely succeeded. Fetching latest stream ID..."
       );
 
       try {
