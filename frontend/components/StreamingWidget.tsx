@@ -82,7 +82,7 @@ export function StreamingWidget({
             : "border-zinc-800"
         }`}
       >
-        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-gradient-to-r from-zinc-900 to-zinc-900/50">
+        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-linear-to-r from-zinc-900 to-zinc-900/50">
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${

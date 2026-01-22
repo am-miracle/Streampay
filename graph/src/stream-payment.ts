@@ -63,10 +63,7 @@ function addUniqueViewer(creator: Creator, payerAddress: Bytes): void {
 }
 
 export function handleEarningsWithdrawn(event: EarningsWithdrawnEvent): void {
-  // Update Creator total earnings
   let creator = getOrCreateCreator(event.params.creator);
-  creator.totalEarned = creator.totalEarned.plus(event.params.amount);
-  creator.save();
 
   // Create immutable withdrawal event
   let entity = new EarningsWithdrawn(
@@ -260,10 +257,12 @@ export function handleStreamStopped(event: StreamStoppedEvent): void {
     stream.stoppedAtTimestamp = event.block.timestamp;
     stream.save();
 
-    // Update Creator active stream count
+    // Update Creator active stream count and total earned
     let creator = Creator.load(stream.receiver);
     if (creator != null) {
       creator.activeStreamCount = creator.activeStreamCount - 1;
+      // Add the totalPaid amount to the creator's total earned
+      creator.totalEarned = creator.totalEarned.plus(event.params.totalPaid);
       creator.save();
     }
   }

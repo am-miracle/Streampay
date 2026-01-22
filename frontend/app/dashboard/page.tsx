@@ -13,20 +13,76 @@ import { usePendingEarnings } from "@/hooks/useStreamPaymentContract";
 import Link from "next/link";
 import { LayoutDashboard, Loader2 } from "lucide-react";
 import { formatUnits } from "viem";
+import { useState } from "react";
+import { stopStreamGasless, withdrawEarningsGasless } from "@/lib/biconomy";
+import { toast } from "sonner";
+import { useReadContract } from "wagmi";
+import {
+  STREAM_PAYMENT_ADDRESSES,
+  STREAM_PAYMENT_ABI,
+} from "@/lib/contracts/config";
 
 export default function DashboardPage() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isWithdrawSuccess, setIsWithdrawSuccess] = useState(false);
+  const [stoppingStreamId, setStoppingStreamId] = useState<string | null>(null);
+
+  const { data: contractOwner } = useReadContract({
+    address: STREAM_PAYMENT_ADDRESSES[84532],
+    abi: STREAM_PAYMENT_ABI,
+    functionName: "owner",
+  });
+
+  const creatorAddress = contractOwner as string | undefined;
 
   const { data: creatorData, isLoading: isLoadingCreator } =
-    useCreatorDashboard(address);
+    useCreatorDashboard(creatorAddress);
   const { data: historyData, isLoading: isLoadingHistory } = useStreamHistory(
-    address,
+    creatorAddress,
     { first: 20 }
   );
 
   const { data: pendingEarnings } = usePendingEarnings(
-    address as `0x${string}`
+    creatorAddress as `0x${string}`
   );
+
+  const handleWithdraw = async () => {
+    setIsWithdrawing(true);
+    setIsWithdrawSuccess(false);
+    try {
+      const result = await withdrawEarningsGasless();
+      toast.success("Earnings withdrawn successfully!", {
+        description: `Transaction: ${result.txHash.slice(0, 10)}...`,
+      });
+      setIsWithdrawSuccess(true);
+      setTimeout(() => setIsWithdrawSuccess(false), 3000);
+    } catch (error: any) {
+      console.error("Withdrawal error:", error);
+      toast.error("Failed to withdraw earnings", {
+        description: error.message || "Please try again",
+      });
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
+  const handleStopStream = async (streamId: string) => {
+    setStoppingStreamId(streamId);
+    try {
+      const result = await stopStreamGasless(BigInt(streamId));
+      toast.success("Stream stopped successfully!", {
+        description: `Transaction: ${result.txHash.slice(0, 10)}...`,
+      });
+    } catch (error: any) {
+      console.error("Stop stream error:", error);
+      toast.error("Failed to stop stream", {
+        description: error.message || "Please try again",
+      });
+    } finally {
+      setStoppingStreamId(null);
+    }
+  };
 
   const stats = {
     totalEarned: creatorData?.totalEarned
@@ -47,7 +103,7 @@ export default function DashboardPage() {
     creatorData?.streams.map((stream) => ({
       id: stream.streamId,
       viewer: stream.payer,
-      startTime: parseInt(stream.startTime) * 1000, // Convert to milliseconds
+      startTime: parseInt(stream.startTime) * 1000,
       deposit: formatUnits(BigInt(stream.deposit), 6),
       rate: formatUnits(BigInt(stream.ratePerMinute), 6),
     })) || [];
@@ -125,12 +181,20 @@ export default function DashboardPage() {
                     ? formatUnits(BigInt(pendingEarnings.toString()), 6)
                     : undefined
                 }
+                onWithdraw={handleWithdraw}
+                isWithdrawing={isWithdrawing}
+                isConfirming={false}
+                withdrawSuccess={isWithdrawSuccess}
               />
             </div>
 
             <div>
               <h2 className="text-2xl font-bold mb-4">Active Streams</h2>
-              <ActiveStreams streams={activeStreams} />
+              <ActiveStreams
+                streams={activeStreams}
+                onStopStream={handleStopStream}
+                stoppingStreamId={stoppingStreamId}
+              />
             </div>
 
             <div>

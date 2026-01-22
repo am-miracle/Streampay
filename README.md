@@ -15,6 +15,8 @@ StreamPay offers a solution with true pay-per-second micropayments that have no 
 4. User closes tab → contract settles exact amount owed
 5. Zero gas fees paid by user (sponsored by platform)
 
+![Architecture diagram](assets/diagram.png)
+
 ## Tech Stack
 - Smart Contracts: Solidity (Base sepolia)
 - Account Abstraction: Biconomy SDK
@@ -28,5 +30,5 @@ StreamPay offers a solution with true pay-per-second micropayments that have no 
 - Tip streaming for creators
 
 ## Try It
-[Link to demo]
+[Link to demo]()
 Contract: 0xB1686a2c0eE7ebCf9Aea3883BCb652D39F881727 (base sepolia)

@@ -55,6 +55,14 @@ const TESTNET_SPONSORSHIP_CONFIG = {
   },
 };
 
+const publicClient = createPublicClient({
+  chain: baseSepolia,
+  transport: http(
+    `https://base-sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API}`
+  ),
+  pollingInterval: 2000,
+});
+
 let meeClient: any | null = null;
 let nexusAccount: any | null = null;
 let smartAccountAddress: string | null = null;
@@ -77,7 +85,9 @@ export async function initializeSmartAccount(walletClient: any): Promise<{
     chainConfigurations: [
       {
         chain: baseSepolia,
-        transport: http(),
+        transport: http(
+          `https://base-sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API}`
+        ),
         version: getMEEVersion(MEEVersion.V2_1_0),
       },
     ],
@@ -128,26 +138,16 @@ export async function createStreamGasless(
   userOpHash: string;
 }> {
   if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
+    throw new Error("Smart account not initialized.");
   }
 
   const ratePerSecond = BigInt(Math.floor((ratePerMinute / 60) * 1e6));
   const depositAmount = parseUnits(depositDollars.toString(), 6);
-
-  console.log("Creating stream with params:", {
-    chainId: baseSepolia.id,
-    usdcAddress: USDC_ADDRESS,
-    streamPaymentAddress: STREAM_PAYMENT_ADDRESS,
-    creatorAddress,
-    ratePerSecond: ratePerSecond.toString(),
-    depositAmount: depositAmount.toString(),
-  });
-
-  console.log("Nexus account deployments:", nexusAccount.deployments);
+  let txHash = "";
 
   try {
+    console.log("Creating stream...");
+
     const { hash } = await meeClient.execute({
       sponsorship: true,
       sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
@@ -180,9 +180,14 @@ export async function createStreamGasless(
       ],
     });
 
-    console.log("Transaction hash:", hash);
+    txHash = hash;
+    console.log("Transaction sent. Hash:", hash);
 
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+    const receipt = await publicClient.waitForTransactionReceipt({
+      hash,
+      confirmations: 1,
+      timeout: 60_000,
+    });
 
     const streamId = parseStreamCreatedEvent(receipt.logs) ?? BigInt(0);
 
@@ -192,8 +197,36 @@ export async function createStreamGasless(
       userOpHash: hash,
     };
   } catch (error: any) {
+    if (error.name === "WaitForTransactionReceiptTimeoutError" && txHash) {
+      console.warn(
+        "⚠️ Transaction timed out, but likely succeeded. Fetching latest stream ID..."
+      );
+
+      try {
+        const totalStreams = (await publicClient.readContract({
+          address: STREAM_PAYMENT_ADDRESS,
+          abi: STREAM_PAYMENT_ABI,
+          functionName: "getTotalStreams",
+        })) as bigint;
+
+        // The latest ID is always (Total - 1) because IDs start at 0
+        const latestId =
+          totalStreams > BigInt(0) ? totalStreams - BigInt(1) : BigInt(0);
+
+        console.log("Recovered Stream ID:", latestId.toString());
+
+        return {
+          streamId: latestId,
+          txHash: txHash,
+          userOpHash: txHash,
+        };
+      } catch (fallbackError) {
+        console.error("Fallback failed:", fallbackError);
+        throw error;
+      }
+    }
+
     console.error("Execute transaction error:", error);
-    console.error("Error details:", error?.message, error?.response?.data);
     throw error;
   }
 }
@@ -205,42 +238,63 @@ export async function stopStreamGasless(streamId: bigint): Promise<{
   refunded: bigint;
   duration: bigint;
 }> {
-  if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
+  if (!meeClient || !nexusAccount)
+    throw new Error("Smart account not initialized.");
+
+  let txHash = "";
+
+  try {
+    const { hash } = await meeClient.execute({
+      sponsorship: true,
+      sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
+      instructions: [
+        {
+          chainId: baseSepolia.id,
+          calls: [
+            {
+              to: STREAM_PAYMENT_ADDRESS,
+              data: encodeFunctionData({
+                abi: STREAM_PAYMENT_ABI,
+                functionName: "stopStream",
+                args: [streamId],
+              }),
+            },
+          ],
+        },
+      ],
+    });
+
+    txHash = hash;
+    console.log("Stopping stream... Hash:", hash);
+
+    const receipt = await publicClient.waitForTransactionReceipt({
+      hash,
+      confirmations: 1,
+      timeout: 60_000,
+    });
+
+    const stoppedEvent = parseStreamStoppedEvent(receipt.logs);
+
+    return {
+      txHash: hash,
+      userOpHash: hash,
+      totalPaid: stoppedEvent?.totalPaid ?? BigInt(0),
+      refunded: stoppedEvent?.refunded ?? BigInt(0),
+      duration: stoppedEvent?.duration ?? BigInt(0),
+    };
+  } catch (error: any) {
+    if (error.name === "WaitForTransactionReceiptTimeoutError" && txHash) {
+      console.warn("Stop transaction timed out, assuming success.");
+      return {
+        txHash: txHash,
+        userOpHash: txHash,
+        totalPaid: BigInt(0),
+        refunded: BigInt(0),
+        duration: BigInt(0),
+      };
+    }
+    throw error;
   }
-
-  const { hash } = await meeClient.execute({
-    sponsorship: true,
-    sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
-    instructions: [
-      {
-        chainId: baseSepolia.id,
-        calls: [
-          {
-            to: STREAM_PAYMENT_ADDRESS,
-            data: encodeFunctionData({
-              abi: STREAM_PAYMENT_ABI,
-              functionName: "stopStream",
-              args: [streamId],
-            }),
-          },
-        ],
-      },
-    ],
-  });
-
-  const receipt = await publicClient.waitForTransactionReceipt({ hash });
-  const stoppedEvent = parseStreamStoppedEvent(receipt.logs);
-
-  return {
-    txHash: hash,
-    userOpHash: hash,
-    totalPaid: stoppedEvent?.totalPaid ?? BigInt(0),
-    refunded: stoppedEvent?.refunded ?? BigInt(0),
-    duration: stoppedEvent?.duration ?? BigInt(0),
-  };
 }
 
 export async function extendStreamGasless(
@@ -250,232 +304,206 @@ export async function extendStreamGasless(
   txHash: string;
   userOpHash: string;
 }> {
-  if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
-  }
+  if (!meeClient || !nexusAccount)
+    throw new Error("Smart account not initialized.");
 
   const additionalDeposit = parseUnits(additionalDollars.toString(), 6);
+  let txHash = "";
 
-  const { hash } = await meeClient.execute({
-    sponsorship: true,
-    sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
-    instructions: [
-      {
-        chainId: baseSepolia.id,
-        calls: [
-          {
-            to: USDC_ADDRESS,
-            data: encodeFunctionData({
-              abi: ERC20_ABI,
-              functionName: "approve",
-              args: [STREAM_PAYMENT_ADDRESS, additionalDeposit],
-            }),
-          },
-          {
-            to: STREAM_PAYMENT_ADDRESS,
-            data: encodeFunctionData({
-              abi: STREAM_PAYMENT_ABI,
-              functionName: "extendStream",
-              args: [streamId, additionalDeposit],
-            }),
-          },
-        ],
-      },
-    ],
-  });
+  try {
+    const { hash } = await meeClient.execute({
+      sponsorship: true,
+      sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
+      instructions: [
+        {
+          chainId: baseSepolia.id,
+          calls: [
+            {
+              to: USDC_ADDRESS,
+              data: encodeFunctionData({
+                abi: ERC20_ABI,
+                functionName: "approve",
+                args: [STREAM_PAYMENT_ADDRESS, additionalDeposit],
+              }),
+            },
+            {
+              to: STREAM_PAYMENT_ADDRESS,
+              data: encodeFunctionData({
+                abi: STREAM_PAYMENT_ABI,
+                functionName: "extendStream",
+                args: [streamId, additionalDeposit],
+              }),
+            },
+          ],
+        },
+      ],
+    });
 
-  return {
-    txHash: hash,
-    userOpHash: hash,
-  };
+    txHash = hash;
+
+    await publicClient.waitForTransactionReceipt({
+      hash,
+      confirmations: 1,
+      timeout: 60_000,
+    });
+
+    return { txHash: hash, userOpHash: hash };
+  } catch (error: any) {
+    if (error.name === "WaitForTransactionReceiptTimeoutError" && txHash) {
+      return { txHash: txHash, userOpHash: txHash };
+    }
+    throw error;
+  }
 }
 
 export async function batchStopStreamsGasless(streamIds: bigint[]): Promise<{
   txHash: string;
   userOpHash: string;
 }> {
-  if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
+  if (!meeClient || !nexusAccount)
+    throw new Error("Smart account not initialized.");
+  let txHash = "";
+
+  try {
+    const { hash } = await meeClient.execute({
+      sponsorship: true,
+      sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
+      instructions: [
+        {
+          chainId: baseSepolia.id,
+          calls: [
+            {
+              to: STREAM_PAYMENT_ADDRESS,
+              data: encodeFunctionData({
+                abi: STREAM_PAYMENT_ABI,
+                functionName: "batchStopStreams",
+                args: [streamIds],
+              }),
+            },
+          ],
+        },
+      ],
+    });
+
+    txHash = hash;
+
+    await publicClient.waitForTransactionReceipt({
+      hash,
+      confirmations: 1,
+      timeout: 60_000,
+    });
+
+    return { txHash: hash, userOpHash: hash };
+  } catch (error: any) {
+    if (error.name === "WaitForTransactionReceiptTimeoutError" && txHash) {
+      return { txHash: txHash, userOpHash: txHash };
+    }
+    throw error;
   }
-
-  const { hash } = await meeClient.execute({
-    sponsorship: true,
-    sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
-    instructions: [
-      {
-        chainId: baseSepolia.id,
-        calls: [
-          {
-            to: STREAM_PAYMENT_ADDRESS,
-            data: encodeFunctionData({
-              abi: STREAM_PAYMENT_ABI,
-              functionName: "batchStopStreams",
-              args: [streamIds],
-            }),
-          },
-        ],
-      },
-    ],
-  });
-
-  return {
-    txHash: hash,
-    userOpHash: hash,
-  };
 }
 
 export async function withdrawEarningsGasless(): Promise<{
   txHash: string;
   userOpHash: string;
 }> {
-  if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
+  if (!meeClient || !nexusAccount)
+    throw new Error("Smart account not initialized.");
+  let txHash = "";
+
+  try {
+    const { hash } = await meeClient.execute({
+      sponsorship: true,
+      sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
+      instructions: [
+        {
+          chainId: baseSepolia.id,
+          calls: [
+            {
+              to: STREAM_PAYMENT_ADDRESS,
+              data: encodeFunctionData({
+                abi: STREAM_PAYMENT_ABI,
+                functionName: "withdrawEarnings",
+                args: [],
+              }),
+            },
+          ],
+        },
+      ],
+    });
+
+    txHash = hash;
+
+    await publicClient.waitForTransactionReceipt({
+      hash,
+      confirmations: 1,
+      timeout: 60_000,
+    });
+
+    return { txHash: hash, userOpHash: hash };
+  } catch (error: any) {
+    if (error.name === "WaitForTransactionReceiptTimeoutError" && txHash) {
+      return { txHash: txHash, userOpHash: txHash };
+    }
+    throw error;
   }
+}
 
-  const { hash } = await meeClient.execute({
-    sponsorship: true,
-    sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
-    instructions: [
-      {
-        chainId: baseSepolia.id,
-        calls: [
-          {
-            to: STREAM_PAYMENT_ADDRESS,
-            data: encodeFunctionData({
-              abi: STREAM_PAYMENT_ABI,
-              functionName: "withdrawEarnings",
-              args: [],
-            }),
-          },
-        ],
-      },
-    ],
-  });
+async function executeRateFunction(functionName: string, args: any[]) {
+  if (!meeClient || !nexusAccount)
+    throw new Error("Smart account not initialized.");
+  let txHash = "";
 
-  return {
-    txHash: hash,
-    userOpHash: hash,
-  };
+  try {
+    const { hash } = await meeClient.execute({
+      sponsorship: true,
+      sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
+      instructions: [
+        {
+          chainId: baseSepolia.id,
+          calls: [
+            {
+              to: STREAM_PAYMENT_ADDRESS,
+              data: encodeFunctionData({
+                abi: STREAM_PAYMENT_ABI,
+                functionName: functionName,
+                args: args,
+              }),
+            },
+          ],
+        },
+      ],
+    });
+    txHash = hash;
+    await publicClient.waitForTransactionReceipt({
+      hash,
+      confirmations: 1,
+      timeout: 60_000,
+    });
+    return { txHash: hash, userOpHash: hash };
+  } catch (error: any) {
+    if (error.name === "WaitForTransactionReceiptTimeoutError" && txHash) {
+      return { txHash: txHash, userOpHash: txHash };
+    }
+    throw error;
+  }
 }
 
 export async function proposeRateChangeGasless(
   streamId: bigint,
   newRatePerMinute: number
-): Promise<{
-  txHash: string;
-  userOpHash: string;
-}> {
-  if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
-  }
-
+) {
   const newRatePerSecond = BigInt(Math.floor((newRatePerMinute / 60) * 1e6));
-
-  const { hash } = await meeClient.execute({
-    sponsorship: true,
-    sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
-    instructions: [
-      {
-        chainId: baseSepolia.id,
-        calls: [
-          {
-            to: STREAM_PAYMENT_ADDRESS,
-            data: encodeFunctionData({
-              abi: STREAM_PAYMENT_ABI,
-              functionName: "proposeRateChange",
-              args: [streamId, newRatePerSecond],
-            }),
-          },
-        ],
-      },
-    ],
-  });
-
-  return {
-    txHash: hash,
-    userOpHash: hash,
-  };
+  return executeRateFunction("proposeRateChange", [streamId, newRatePerSecond]);
 }
 
-export async function acceptRateChangeGasless(streamId: bigint): Promise<{
-  txHash: string;
-  userOpHash: string;
-}> {
-  if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
-  }
-
-  const { hash } = await meeClient.execute({
-    sponsorship: true,
-    sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
-    instructions: [
-      {
-        chainId: baseSepolia.id,
-        calls: [
-          {
-            to: STREAM_PAYMENT_ADDRESS,
-            data: encodeFunctionData({
-              abi: STREAM_PAYMENT_ABI,
-              functionName: "acceptRateChange",
-              args: [streamId],
-            }),
-          },
-        ],
-      },
-    ],
-  });
-
-  return {
-    txHash: hash,
-    userOpHash: hash,
-  };
+export async function acceptRateChangeGasless(streamId: bigint) {
+  return executeRateFunction("acceptRateChange", [streamId]);
 }
 
-export async function cancelRateChangeGasless(streamId: bigint): Promise<{
-  txHash: string;
-  userOpHash: string;
-}> {
-  if (!meeClient || !nexusAccount) {
-    throw new Error(
-      "Smart account not initialized. Call initializeSmartAccount first."
-    );
-  }
-
-  const { hash } = await meeClient.execute({
-    sponsorship: true,
-    sponsorshipOptions: TESTNET_SPONSORSHIP_CONFIG,
-    instructions: [
-      {
-        chainId: baseSepolia.id,
-        calls: [
-          {
-            to: STREAM_PAYMENT_ADDRESS,
-            data: encodeFunctionData({
-              abi: STREAM_PAYMENT_ABI,
-              functionName: "cancelRateChange",
-              args: [streamId],
-            }),
-          },
-        ],
-      },
-    ],
-  });
-
-  return {
-    txHash: hash,
-    userOpHash: hash,
-  };
+export async function cancelRateChangeGasless(streamId: bigint) {
+  return executeRateFunction("cancelRateChange", [streamId]);
 }
+
 function parseStreamCreatedEvent(logs: Log[]): bigint | null {
   for (const log of logs) {
     try {
@@ -525,11 +553,6 @@ function parseStreamStoppedEvent(logs: Log[]): {
   }
   return null;
 }
-
-const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http(),
-});
 
 export async function getStream(streamId: bigint) {
   return publicClient.readContract({

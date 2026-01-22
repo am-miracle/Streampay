@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Play, Clock, DollarSign } from "lucide-react";
+import { Play, Clock, DollarSign, StopCircle, Loader2 } from "lucide-react";
 
 interface Stream {
   id: string;
@@ -13,9 +13,15 @@ interface Stream {
 
 interface ActiveStreamsProps {
   streams: Stream[];
+  onStopStream?: (streamId: string) => void;
+  stoppingStreamId?: string | null;
 }
 
-export function ActiveStreams({ streams }: ActiveStreamsProps) {
+export function ActiveStreams({
+  streams,
+  onStopStream,
+  stoppingStreamId,
+}: ActiveStreamsProps) {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
@@ -61,6 +67,9 @@ export function ActiveStreams({ streams }: ActiveStreamsProps) {
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-400">
                 Status
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-400">
+                Action
               </th>
             </tr>
           </thead>
@@ -117,6 +126,27 @@ export function ActiveStreams({ streams }: ActiveStreamsProps) {
                       <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                       Live
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {onStopStream && (
+                      <button
+                        onClick={() => onStopStream(stream.id)}
+                        disabled={stoppingStreamId === stream.id}
+                        className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 text-red-400 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {stoppingStreamId === stream.id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Stopping...
+                          </>
+                        ) : (
+                          <>
+                            <StopCircle className="w-4 h-4" />
+                            Stop
+                          </>
+                        )}
+                      </button>
+                    )}
                   </td>
                 </tr>
               );

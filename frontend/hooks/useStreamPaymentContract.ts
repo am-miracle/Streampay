@@ -1,4 +1,9 @@
-import { useReadContract, useReadContracts } from "wagmi";
+import {
+  useReadContract,
+  useReadContracts,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+} from "wagmi";
 import {
   STREAM_PAYMENT_ADDRESSES,
   STREAM_PAYMENT_ABI,
@@ -137,4 +142,59 @@ export function useMultipleStreams(
       enabled: streamIds.length > 0,
     },
   });
+}
+
+export function useWithdrawEarnings(chainId?: SupportedChainId) {
+  const { data: hash, writeContract, isPending, error } = useWriteContract();
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  const withdraw = () => {
+    writeContract({
+      address: chainId
+        ? STREAM_PAYMENT_ADDRESSES[chainId]
+        : STREAM_PAYMENT_ADDRESSES[80002],
+      abi: STREAM_PAYMENT_ABI,
+      functionName: "withdrawEarnings",
+    });
+  };
+
+  return {
+    withdraw,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+    hash,
+  };
+}
+
+export function useStopStream(chainId?: SupportedChainId) {
+  const { data: hash, writeContract, isPending, error } = useWriteContract();
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  const stopStream = (streamId: bigint) => {
+    writeContract({
+      address: chainId
+        ? STREAM_PAYMENT_ADDRESSES[chainId]
+        : STREAM_PAYMENT_ADDRESSES[80002],
+      abi: STREAM_PAYMENT_ABI,
+      functionName: "stopStream",
+      args: [streamId],
+    });
+  };
+
+  return {
+    stopStream,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+    hash,
+  };
 }
