@@ -18,7 +18,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "A deep dive into how account abstraction and bundlers enable true micropayments without gas fees. Learn the technical architecture behind StreamPay.",
     author: "StreamPay Team",
-    authorAddress: "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4",
+    authorAddress: "0x742d35cc6634c0532925a3b844bc454e4438f44e",
     readTime: 8,
     ratePerMinute: 0.02,
     estimatedCost: 0.16,

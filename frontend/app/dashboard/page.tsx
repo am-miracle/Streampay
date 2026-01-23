@@ -56,14 +56,14 @@ export default function DashboardPage() {
   }, [walletClient, isInitializing]);
 
   const { data: creatorData, isLoading: isLoadingCreator } =
-    useCreatorDashboard("0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4");
+    useCreatorDashboard("0x742d35cc6634c0532925a3b844bc454e4438f44e");
   const { data: historyData, isLoading: isLoadingHistory } = useStreamHistory(
-    "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4",
+    "0x742d35cc6634c0532925a3b844bc454e4438f44e",
     { first: 20 }
   );
 
   const { data: pendingEarnings } = usePendingEarnings(
-    "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4" as `0x${string}`
+    "0x742d35cc6634c0532925a3b844bc454e4438f44e" as `0x${string}`
   );
 
   const handleWithdraw = async () => {
