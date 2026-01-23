@@ -56,14 +56,14 @@ export default function DashboardPage() {
   }, [walletClient, isInitializing]);
 
   const { data: creatorData, isLoading: isLoadingCreator } =
-    useCreatorDashboard(address);
+    useCreatorDashboard("0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4");
   const { data: historyData, isLoading: isLoadingHistory } = useStreamHistory(
-    address,
+    "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4",
     { first: 20 }
   );
 
   const { data: pendingEarnings } = usePendingEarnings(
-    address as `0x${string}`
+    "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4" as `0x${string}`
   );
 
   const handleWithdraw = async () => {
