@@ -31,7 +31,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "Traditional subscriptions are broken. Discover why pay-per-second models will dominate the creator economy and how blockchain makes it possible.",
     author: "Creator Economy Labs",
-    authorAddress: "0xB0a1020486fDd86795e4f2E06fBF11d6aD2C19BB",
+    authorAddress: "0x742d35cc6634c0532925a3b844bc454e4438f44e",
     readTime: 6,
     ratePerMinute: 0.015,
     estimatedCost: 0.09,
@@ -44,7 +44,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "Step-by-step tutorial on implementing account abstraction in your dApp. Code examples, best practices, and common pitfalls to avoid.",
     author: "Web3 Builders",
-    authorAddress: "0xe9f1406E039d5c3FBF442C2542Df84E52A51d3C4",
+    authorAddress: "0x742d35cc6634c0532925a3b844bc454e4438f44e",
     readTime: 12,
     ratePerMinute: 0.025,
     estimatedCost: 0.3,
@@ -57,7 +57,7 @@ export const PREMIUM_ARTICLES: Article[] = [
     description:
       "Analyzing potential vulnerabilities in streaming payment systems. How StreamPay protects against reentrancy, front-running, and other attack vectors.",
     author: "Security Research",
-    authorAddress: "0x1360eDa247bF2fEfeCc5FD5926aC1EF628b19733",
+    authorAddress: "0x742d35cc6634c0532925a3b844bc454e4438f44e",
     readTime: 10,
     ratePerMinute: 0.03,
     estimatedCost: 0.3,

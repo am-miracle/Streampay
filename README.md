@@ -9,6 +9,7 @@ The internet has a big micropayment problem that slows down the growth of the cr
 StreamPay offers a solution with true pay-per-second micropayments that have no gas fees. Using ERC-4337 account abstraction, users pay only for what they use just $0.02 per minute. There’s no need for credit cards or complicated forms. Payments stop automatically when users close the tab, and integration takes just five lines of code for quick settlement. This new approach aims to change micropayments and unlock the full potential of the creator economy.
 
 ## How It Works
+> grab USDC base sepolia token from Circle for testing: [Faucet](https://faucet.circle.com/)
 1. User connects wallet, approves spending limit
 2. Clicks "Start Streaming" on content
 3. Payment counter runs in real-time
@@ -30,5 +31,5 @@ StreamPay offers a solution with true pay-per-second micropayments that have no 
 - Tip streaming for creators
 
 ## Try It
-[Link to demo]()
+[Link to demo](https://streampay-chi.vercel.app/)
 Contract: 0xB1686a2c0eE7ebCf9Aea3883BCb652D39F881727 (base sepolia)
